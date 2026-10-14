@@ -74,7 +74,7 @@ header.top{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px
 .dfoot .wide{width:100%}
 .dtf{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
 .dtf span{margin-right:2px}
-#dInput{width:100%;resize:vertical;min-height:72px;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;line-height:1.55;font-size:14px}
+#dInput{width:100%;resize:vertical;min-height:160px;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;line-height:1.55;font-size:14px}
 #dInput:focus{border-color:var(--c-obs);outline:none}
 .hint{font-size:12px;color:var(--muted)}
 
@@ -217,6 +217,13 @@ header.top{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px
 .if .stamps{font-size:11.5px;color:var(--muted);line-height:1.5;margin-right:auto}
 .if .acts{display:flex;gap:6px;flex-wrap:wrap}
 .msum{display:flex;flex-wrap:wrap;gap:6px}
+/* 左右分欄：左邊主要內容（撐滿高度），右邊日期、時間、標籤、分組等設定 */
+.ib.split{display:flex;gap:18px;align-items:stretch}
+.ib-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.ib-side{width:340px;flex:none;display:flex;flex-direction:column;gap:12px;padding-left:18px;border-left:1px solid var(--line)}
+.ib-main .fl.grow{flex:1;min-height:0}
+.ib-main .fl.grow textarea{flex:1;min-height:140px;resize:none;font-size:15px;line-height:1.7}
+@media (max-width:760px){.ib.split{flex-direction:column}.ib-side{width:auto;padding-left:0;border-left:0}}
 
 /* 總覽 */
 #ov{flex:1;overflow:auto;padding:20px 16px 56px;min-height:0}
@@ -314,7 +321,7 @@ tbody tr:hover td{background:var(--card)}
     <div class="dfoot">
       <button class="btn primary wide" id="dMerge" disabled>勾選觀察後整理成觀點</button>
       <div class="dtf" id="dTf"></div>
-      <textarea id="dInput" rows="3" placeholder="依序寫下看到的現象。Enter 新增、Shift+Enter 換行。&#10;開頭可加時間，例如：10:15 掃前高後回落"></textarea>
+      <textarea id="dInput" rows="7" placeholder="依序寫下看到的現象。Enter 新增、Shift+Enter 換行。&#10;開頭可加時間，例如：10:15 掃前高後回落"></textarea>
     </div>
   </aside>
 
@@ -909,6 +916,7 @@ function autoLayout(silent){
 function fields(n){
   const v=k=>n[k]??'';
   const ta=(k,l,ph='',r=3,cls='')=>`<label class="fl">${l}<textarea data-k="${k}" rows="${r}" class="${cls}" placeholder="${esc(ph)}">${esc(v(k))}</textarea></label>`;
+  const taG=(k,l,ph='')=>`<label class="fl grow">${l}<textarea data-k="${k}" placeholder="${esc(ph)}">${esc(v(k))}</textarea></label>`;
   const inp=(k,l,type='text',ph='',a='')=>`<label class="fl">${l}<input data-k="${k}" name="${k}" type="${type}" value="${esc(v(k))}" placeholder="${esc(ph)}" ${a}></label>`;
   const sl=(k,l,map)=>`<label class="fl">${l}<select data-k="${k}">${Object.entries(map).map(([a,b])=>`<option value="${a}" ${n[k]===a?'selected':''}>${b}</option>`).join('')}</select></label>`;
   const tg=(k,l,opts,mono=true)=>{const en=Array.isArray(opts)?opts.map(o=>[o,o]):Object.entries(opts);return `<div class="fl">${l}<div class="tgs">${en.map(([a,b])=>`<button type="button" class="tg${mono?' mono':''}" data-tk="${k}" data-tv="${esc(a)}" aria-pressed="${(n[k]||[]).includes(a)}">${esc(b)}</button>`).join('')}</div></div>`};
@@ -917,13 +925,13 @@ function fields(n){
     case 'day':{const os=obsOf(n.date);
       return inp('date','日期','date')+`<div class="src"><b style="font-size:13px">這天的觀察（${os.length}）</b>${os.map((o,i)=>`<button class="lk" data-go="${o.id}"><span class="mono" style="color:var(--c-obs)">${String(i+1).padStart(2,'0')}</span>${esc(o.text.slice(0,60))||'（空白）'}</button>`).join('')||'<span class="hint">還沒有。按 Tab 或左側草稿新增。</span>'}</div>`}
     case 'obs':
-      return ta('text','觀察內容','看到了什麼：價位、時間、走勢、量能…',6,'big')+`<div class="row2">${inp('date','行情日','date')}${inp('time','時間 (ET)','text','10:15')}</div>`+tg('tfs','週期',TFS)+tags+srcInfo(n);
+      return{main:taG('text','觀察內容','看到了什麼：價位、時間、走勢、量能…'),side:`<div class="row2">${inp('date','行情日','date')}${inp('time','時間 (ET)','text','10:15')}</div>`+tg('tfs','週期',TFS)+tags,src:srcInfo(n)};
     case 'idea':
-      return inp('title','觀點標題','text','一句話說清楚整理出的規律')+sl('status','狀態',STATUS)+ta('text','可驗證的陳述','什麼條件下、會發生什麼、機率或幅度多少',4)+ta('condition','適用條件 / 排除','排除哪些日子、需要什麼前提',2)+tg('tfs','觀察週期',TFS)+tags+srcInfo(n);
+      return{main:inp('title','觀點標題','text','一句話說清楚整理出的規律')+taG('text','可驗證的陳述','什麼條件下、會發生什麼、機率或幅度多少')+ta('condition','適用條件 / 排除','排除哪些日子、需要什麼前提',2),side:sl('status','狀態',STATUS)+tg('tfs','觀察週期',TFS)+tags,src:srcInfo(n)};
     case 'ext':
-      return inp('title','標題','text','延伸方向、疑問或看法')+ta('text','內容','',6)+tags+srcInfo(n);
+      return{main:inp('title','標題','text','延伸方向、疑問或看法')+taG('text','內容',''),side:tags,src:srcInfo(n)};
     case 'val':
-      return `<div class="row2">${inp('date','行情日','date')}${sl('verdict','結果',VERDICT)}</div>`+inp('title','標題（可留空）')+ta('text','驗證內容','價位、時間、走勢，以及為什麼算支持或反駁',6)+tags+srcInfo(n);
+      return{main:inp('title','標題（可留空）')+taG('text','驗證內容','價位、時間、走勢，以及為什麼算支持或反駁'),side:`<div class="row2">${inp('date','行情日','date')}${sl('verdict','結果',VERDICT)}</div>`+tags,src:srcInfo(n)};
     case 'strat':
       return inp('title','策略名稱','text','例如：OR30 突破回測')+sl('status','策略狀態',SSTATUS)+ta('text','概述','',2)
       +`<div class="box g-tf"><div class="gh">大小週期</div>${tg('htf','大週期（看方向）',TFS)}${tg('ltf','小週期（找進場）',TFS)}${ta('tfNote','週期說明','各週期分別用來判斷什麼',2)}</div>`
@@ -946,6 +954,11 @@ function srcInfo(n){
 }
 function groupField(n){
   return `<label class="fl">分組<select data-ng><option value="">（不屬於任何分組）</option>${db.groups.map(g=>`<option value="${g.id}" ${g.members.includes(n.id)?'selected':''}>${esc(g.title||'未命名分組')}</option>`).join('')}<option value="__new">＋ 新分組…</option></select></label>`;
+}
+function inspBody(n){
+  const f=fields(n);
+  if(typeof f==='string')return `<div class="ib">${f}${groupField(n)}</div>`;
+  return `<div class="ib split"><div class="ib-main">${f.main}</div><div class="ib-side">${f.side}${groupField(n)}${f.src||''}</div></div>`;
 }
 function renderInspector(){
   const el=$('insp');
@@ -978,7 +991,7 @@ function renderInspector(){
   }
   const n=one();if(!n){el.hidden=true;return}
   el.innerHTML=`<div class="ih t-${n.type}${n.type==='val'?' v-'+n.verdict:''}"><span class="badge">${T[n.type].n}</span>${n.type==='day'?'':`<select class="tsel" data-k="type" aria-label="節點類型">${ADDABLE.map(t=>`<option value="${t}" ${n.type===t?'selected':''}>改為：${T[t].n}</option>`).join('')}</select>`}<button class="x" data-ia="close" aria-label="關閉">×</button></div>
-  <div class="ib">${fields(n)}${groupField(n)}</div>
+  ${inspBody(n)}
   <div class="if"><div class="stamps mono">建立 ${fmt(n.createdAt)}<br>修改 ${fmt(n.updatedAt)}</div><div class="acts"><button class="btn" data-ia="autow" aria-pressed="${!!n.autoW}" title="寬度跟著內容變寬，打字不換行">${n.autoW?'✓ 自動寬度':'自動寬度'}</button><button class="btn" data-ia="child">＋ 延伸</button><button class="btn" data-ia="center">置中</button><button class="btn danger" data-ia="del">刪除</button></div></div>`;
 }
 let snapEl=null;
