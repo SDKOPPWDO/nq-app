@@ -65,7 +65,7 @@ header.top{flex:none;height:46px;display:flex;align-items:center;gap:8px;padding
 .dot.ok{background:#5fbb87}.dot.dirty{background:#dcb35e}.dot.err{background:#ec716d}
 #menuBtn{display:none}
 #scroll{flex:1;overflow:auto;min-height:0}
-.page{max-width:900px;margin:0 auto;padding:56px 96px 40vh}
+.page{max-width:none;margin:0;padding:48px 40px 40vh 72px}
 
 /* 頁面標頭 */
 .phead{margin-bottom:10px}
@@ -249,6 +249,45 @@ body.bselecting,body.bselecting *{user-select:none!important;-webkit-user-select
 .ovt th:first-child{z-index:3}
 .ovt td .ovl{margin-left:0}
 
+/* 分歧點 / 分支 */
+.t-fork{margin-top:.4em}
+.t-fork .bc{align-items:center;padding:3px 6px}
+.t-fork .tx{font-size:14px;color:var(--muted)}
+.fklbl{flex:none;font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:#22304a;color:#8fb3ef;white-space:nowrap}
+.fkv{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;flex:none}
+.fkv button{border:0;background:none;padding:1px 8px;font-size:12px;cursor:pointer;color:var(--muted)}
+.fkv button.on{background:var(--hover);color:var(--ink)}
+.fkwrap{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:10px;align-items:start;margin:4px 0 10px calc(var(--ind,0)*26px)}
+.fkwrap.v-tab{grid-template-columns:minmax(0,1fr)}
+.fkwrap.v-tree{grid-template-columns:minmax(0,1fr);border-left:2px solid var(--line2);padding-left:14px;margin-left:calc(var(--ind,0)*26px + 12px)}
+.brcol{position:relative;min-width:0;background:#1d1d1d;border:1px solid var(--line2);border-top:3px solid var(--line2);border-radius:8px;padding:6px 8px 8px 26px}
+.brcol.a-long{border-top-color:#ff5c5c}.brcol.a-short{border-top-color:#3ddc84}.brcol.a-wait{border-top-color:#e8c26a}
+.brcol.off{display:none}
+.brcol .blk{margin-left:calc(var(--ind,0)*18px)}
+.brcol .gut{left:-26px}.brcol .gut [data-plus]{display:none}
+.brcol .qadd{position:absolute;right:4px;bottom:calc(100% - 4px);z-index:6;background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:2px;pointer-events:none}
+.brcol .blk:hover>.bc>.qadd{pointer-events:auto}
+@media (hover:none){.brcol .qadd{position:static;background:none;border:0;padding:0;pointer-events:auto}}
+.t-branch .bc{align-items:center;padding:2px 4px}
+.t-branch .tx{font-size:16px;font-weight:700}
+.t-branch .gut{top:5px}
+.fktabs{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 6px calc(var(--ind,0)*26px)}
+.fktabs button{border:1px solid var(--line2);background:none;border-radius:6px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--muted)}
+.fktabs button.on{background:var(--hover);color:var(--ink);border-color:var(--muted)}
+.fktabs.hid,.fkwrap.hid{display:none}
+
+/* 側欄收合 */
+#side{transition:width .18s,border-color .18s;overflow:hidden}
+#side>*{min-width:257px}
+@media (min-width:861px){body.sidecol #side{width:0;border-right-color:transparent}body.sidecol #menuBtn{display:inline-flex}}
+@media (max-width:1100px){.fkwrap.v-side{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+/* 分支裡面再分岔：標頭換行，不要擠成直排 */
+.brcol .t-fork .bc{flex-wrap:wrap;row-gap:4px}
+.brcol .t-fork .tx{flex:1 1 140px}
+.brcol .t-fork .qadd{position:static;background:none;border:0;padding:0;pointer-events:auto}
+.brcol .t-branch .bc{flex-wrap:wrap}
+.brcol .t-branch .tx{flex:1 1 120px}
+
 @media (max-width:860px){
   .page{padding:36px 22px 40vh 44px}
   #side{position:fixed;top:0;bottom:0;left:0;box-shadow:12px 0 30px rgb(0 0 0 / .5);transform:translateX(-105%);transition:transform .18s}
@@ -263,7 +302,7 @@ body.bselecting,body.bselecting *{user-select:none!important;-webkit-user-select
 <body>
 
 <aside id="side">
-  <div class="sh"><b>📒 NQ 交易筆記</b><button class="btn x" id="sideClose" hidden aria-label="關閉側欄">✕</button></div>
+  <div class="sh"><b>📒 NQ 交易筆記</b><button class="btn x" id="sideClose" title="收合側欄（Ctrl+\）" aria-label="收合側欄">«</button></div>
   <input id="search" type="search" placeholder="搜尋頁面或內容…" aria-label="搜尋">
   <div id="plist"></div>
   <div class="sfoot">
@@ -274,7 +313,7 @@ body.bselecting,body.bselecting *{user-select:none!important;-webkit-user-select
 
 <div id="main">
   <header class="top">
-    <button class="btn" id="menuBtn" aria-label="頁面清單">☰</button>
+    <button class="btn" id="menuBtn" aria-label="展開頁面清單" title="展開側欄（Ctrl+\）">☰</button>
     <div id="crumb"></div>
     <div class="tools">
       <button class="btn" id="btnOvw" title="把所有情境排在一起比較">🧭 情境總覽</button>
@@ -348,8 +387,10 @@ body.bselecting,body.bselecting *{user-select:none!important;-webkit-user-select
 <script>
 /* ================= 常數 ================= */
 const KEY='nq-notes-v1',GITCFG='nq-notes-git',OLDKEY='nq-canvas-v3',OLDGIT='nq-canvas-git';
-const TYPES={p:'文字',h1:'大標題',h2:'中標題',h3:'小標題',bullet:'項目清單',num:'編號清單',todo:'待辦事項',toggle:'摺疊清單',quote:'引言',callout:'標示框',divider:'分隔線',scn:'情境走勢',step:'情境步驟',nkey:'重點',nwarn:'注意事項',nmemo:'備註',win:'成功情境',lose:'失敗情境'};
-const PH={p:'輸入文字，或輸入「/」選擇區塊類型',h1:'大標題',h2:'中標題',h3:'小標題',bullet:'清單',num:'清單',todo:'待辦事項',toggle:'摺疊標題',quote:'引言',callout:'輸入內容…',divider:'',scn:'情境名稱，例如：趨勢多，上漲',step:'這一步怎麼走、走到哪、出現什麼',nkey:'重點…',nwarn:'注意事項…',nmemo:'備註…',win:'成功的話會怎麼走…',lose:'失敗的話會怎麼走…'};
+const TYPES={p:'文字',h1:'大標題',h2:'中標題',h3:'小標題',bullet:'項目清單',num:'編號清單',todo:'待辦事項',toggle:'摺疊清單',quote:'引言',callout:'標示框',divider:'分隔線',scn:'情境走勢',step:'情境步驟',nkey:'重點',nwarn:'注意事項',nmemo:'備註',win:'成功情境',lose:'失敗情境',fork:'分歧點',branch:'分支'};
+const PH={p:'輸入文字，或輸入「/」選擇區塊類型',h1:'大標題',h2:'中標題',h3:'小標題',bullet:'清單',num:'清單',todo:'待辦事項',toggle:'摺疊標題',quote:'引言',callout:'輸入內容…',divider:'',scn:'情境名稱，例如：趨勢多，上漲',step:'這一步怎麼走、走到哪、出現什麼',nkey:'重點…',nwarn:'注意事項…',nmemo:'備註…',win:'成功的話會怎麼走…',lose:'失敗的話會怎麼走…',fork:'分歧點，例如：價格收在哪裡？（可留空）',branch:'分支名稱，例如：收在歐盤底部'};
+const COLL=new Set(['toggle','scn','fork','branch']);
+const VIEWS=[['side','並排'],['tab','分頁'],['tree','樹狀']];
 const COLORS=[['','預設'],['gray','灰'],['brown','棕'],['orange','橘'],['yellow','黃'],['green','綠'],['blue','藍'],['purple','紫'],['pink','粉'],['red','紅']];
 const CK=new Set(COLORS.map(c=>c[0]).filter(Boolean));
 const LISTY=['bullet','num','todo','step'];
@@ -366,6 +407,8 @@ const SLASH=[
   ['quote','❝','引言','quote 引言 引用'],
   ['scn','🧭','情境走勢','scenario 情境 走勢 行情 qingjing'],
   ['step','①','情境步驟','step 步驟 順序 序號'],
+  ['fork','⑂','分歧點（分支）','fork branch 分歧 分支 岔路 fenzhi'],
+  ['branch','⑃','分支','branch 分支 路線 fenzhi'],
   ['nkey','★','重點','key 重點 關鍵 zhongdian'],
   ['nwarn','⚠','注意事項','warn 注意 小心 zhuyi'],
   ['nmemo','✎','備註','memo note 備註 beizhu'],
@@ -415,6 +458,8 @@ const plain=html=>{const t=document.createElement('template');t.innerHTML=html||
 
 /* ================= 資料 ================= */
 const mkB=(type,html='',o={})=>Object.assign({id:uid(),type,html,indent:0},o);
+const mkBranch=(ind,html='',act)=>[mkB('branch',html,Object.assign({indent:ind,collapsed:false},act?{act}:{})),mkB('step','',{indent:ind+1})];
+const mkFork=ind=>[mkB('fork','',{indent:ind,collapsed:false,view:(typeof db!=='undefined'&&db.forkView)||'side'}),...mkBranch(ind+1),...mkBranch(ind+1)];
 function mkPage(o={}){const t=now();return Object.assign({id:uid(),icon:'',title:'',blocks:[],createdAt:t,updatedAt:t},o)}
 
 function tpl(kind){
@@ -491,7 +536,20 @@ function tpl(kind){
     B('p',''),
   ]});
   if(kind==='scn'){const T=t=>`<span class="tg">${t}</span>`;return mkPage({icon:'🧭',title:'情境走勢',blocks:[
-    B('callout','輸入 <code>/情境</code> 建立一個情境走勢。在情境標題按 Enter 會產生<b>自動編號</b>的步驟；滑到步驟上可以加 <b>重點</b>、<b>注意</b>、<b>備註</b>；滑到情境標題上可以加 <b>成功</b>、<b>失敗</b>。打字打到「歐盤、底部、5/60」這類詞會自動變成彩色標籤。右上角「🧭 情境總覽」可以把所有情境排在一起比較。',{bg:'purple',emoji:'🧭'}),
+    B('callout','輸入 <code>/情境</code> 建立一個情境走勢。在情境標題按 Enter 會產生<b>自動編號</b>的步驟；滑到步驟上可以加 <b>重點</b>、<b>注意</b>、<b>備註</b>；滑到情境標題上可以加 <b>成功</b>、<b>失敗</b>。打字打到「歐盤、底部、5/60」這類詞會自動變成彩色標籤。右上角「🧭 情境總覽」可以把所有情境排在一起比較。<br><b>分支</b>：開頭一樣、後面走法不同時，滑到情境標題上按 <b>＋分歧</b>，共同的步驟只寫一次，後面分成多條分支（並排／分頁／樹狀可切換）。已經寫好的相似情境，可以框選起來按 ⋮⋮ →「合併成分支」。',{bg:'purple',emoji:'🧭'}),
+    B('scn','趨勢空',{collapsed:false}),
+    B('step',`${T('歐盤')}時 ${T('5/60')} 從${T('下彎')}變${T('走平')}`,{indent:1}),
+    B('fork','價格收在哪裡？',{indent:1,collapsed:false,view:'side'}),
+    B('branch','收在歐盤底部',{indent:2,act:'long',collapsed:false}),
+    B('step',`價格收在${T('歐盤')}${T('底部')}`,{indent:3}),
+    B('step',`價格都在${T('下彎')}的 ${T('1/60')} 下`,{indent:3}),
+    B('win',`站上${T('下彎')}的 ${T('1/60')}，未收破${T('上彎')}的 ${T('1/60')}`,{indent:3}),
+    B('lose',`收破${T('上彎')}的 ${T('1/60')}`,{indent:3}),
+    B('branch','收在歐盤高點',{indent:2,act:'short',collapsed:false}),
+    B('step',`價格收在${T('歐盤')}${T('高點')}`,{indent:3}),
+    B('step',`第二次${T('高點')}出現吞噬 K 或長上影線`,{indent:3}),
+    B('win',`${T('跌破')}${T('歐盤')}${T('底部')}加碼`,{indent:3}),
+    B('lose',`區間被反向${T('突破')}`,{indent:3}),
     B('scn','趨勢多，上漲',{act:'long',collapsed:false}),
     B('step','趨勢多',{indent:1}),
     B('step',`${T('5/60')} 一路上揚`,{indent:1}),
@@ -518,6 +576,7 @@ function norm(d){
       if(n.bg&&!CK.has(n.bg))delete n.bg;
       if(n.emoji!==undefined)n.emoji=String(n.emoji).slice(0,16);
       if(n.act&&!ACTL[n.act])delete n.act;
+      if(n.view&&!VIEWS.some(v=>v[0]===n.view))delete n.view;
       return n});
     if(!q.blocks.length)q.blocks=[mkB('p')];
     return q});
@@ -525,6 +584,7 @@ function norm(d){
   if(!d.pages.some(p=>p.id===d.currentId))d.currentId=d.pages[0].id;
   d.tags=(Array.isArray(d.tags)?d.tags:TAG_DEF.map(([t,c,g])=>({t,c,g}))).filter(x=>x&&String(x.t||'').trim()).map(x=>({t:String(x.t).trim().slice(0,20),c:CK.has(x.c)?x.c:'gray',g:String(x.g||'自訂').slice(0,12)}));
   d.tagAuto=d.tagAuto!==false;
+  if(!VIEWS.some(v=>v[0]===d.forkView))d.forkView='side';
   d.version=1;return d;
 }
 function starter(){const a=tpl('guide'),b=tpl('daily'),c=tpl('strat');return norm({pages:[a,b,c],currentId:b.id,sample:true})}
@@ -565,7 +625,7 @@ function stripChars(el,n){const w=document.createTreeWalker(el,NodeFilter.SHOW_T
 
 /* ================= 渲染 ================= */
 function blockHTML(b,ctx){
-  const ind=b.indent||0,gut=`<div class="gut"><button data-plus title="在下方新增區塊">+</button><button data-hd title="點擊：選單　拖曳：移動">⋮⋮</button></div>`;
+  const ind=ctx.rel??(b.indent||0),gut=`<div class="gut"><button data-plus title="在下方新增區塊">+</button><button data-hd title="點擊：選單　拖曳：移動">⋮⋮</button></div>`;
   if(b.type==='divider')return `<div class="blk t-divider${ctx.hidden?' hid':''}${bsel.has(b.id)?' bsel':''}" data-id="${b.id}" style="--ind:${ind}">${gut}<div class="bc"><hr></div></div>`;
   let pre='';
   if(b.type==='bullet')pre=`<span class="pre dot2">${['•','◦','▪'][ind%3]}</span>`;
@@ -575,7 +635,11 @@ function blockHTML(b,ctx){
   if(b.type==='callout')pre=`<button class="pre emo" data-emo title="更換圖示">${esc(b.emoji||'💡')}</button>`;
   let post='';
   if(b.type==='scn'){pre=`<button class="pre tgl${b.collapsed?'':' open'}" data-tog aria-label="展開或收合">▶</button><span class="scnlbl">情境</span>`;
-    post=`<span class="qadd"><button data-qa="step">＋步驟</button><button data-qa="win">＋成功</button><button data-qa="lose">＋失敗</button></span><button class="act ${b.act||'none'}" data-act title="點一下切換：做多 → 做空 → 觀望 → 不標">${ACTL[b.act]||'＋作法'}</button>`;}
+    post=`<span class="qadd"><button data-qa="step">＋步驟</button><button data-qa="fork" title="從這裡分成多條分支">＋分歧</button><button data-qa="win">＋成功</button><button data-qa="lose">＋失敗</button></span><button class="act ${b.act||'none'}" data-act title="點一下切換：做多 → 做空 → 觀望 → 不標">${ACTL[b.act]||'＋作法'}</button>`;}
+  if(b.type==='fork'){pre=`<button class="pre tgl${b.collapsed?'':' open'}" data-tog aria-label="展開或收合">▶</button><span class="fklbl">⑂ 分歧點</span>`;const v=b.view||'side';
+    post=`<span class="fkv">${VIEWS.map(([k,l])=>`<button type="button" data-fview="${k}" class="${v===k?'on':''}">${l}</button>`).join('')}</span><span class="qadd" style="opacity:1"><button data-qa="branch">＋分支</button></span>`;}
+  if(b.type==='branch'){pre=`<button class="pre tgl${b.collapsed?'':' open'}" data-tog aria-label="展開或收合">▶</button>`;
+    post=`<span class="qadd"><button data-qa="step">＋步驟</button><button data-qa="win">＋成功</button><button data-qa="lose">＋失敗</button><button data-qa="fork" title="在這條分支裡再分岔">＋分歧</button></span><button class="act ${b.act||'none'}" data-act title="點一下切換：做多 → 做空 → 觀望 → 不標">${ACTL[b.act]||'＋作法'}</button>`;}
   if(b.type==='step'){pre=`<span class="pre sno">${ctx.n}</span>`;post=`<span class="qadd"><button data-qa="nkey">＋重點</button><button data-qa="nwarn">＋注意</button><button data-qa="nmemo">＋備註</button></span>`;}
   if(CHIP[b.type])pre=`<span class="pre chip ${b.type}">${CHIP[b.type]}</span>`;
   const bg=b.bg!==undefined?b.bg:(b.type==='callout'?'gray':'');
@@ -595,17 +659,38 @@ function renderHead(){
   $('crumb').textContent=`${p.icon||'📄'}  ${p.title||'未命名'}`;
   document.title=(p.title||'未命名')+'・NQ 交易筆記';
 }
-function renderBlocks(fid,pos){
-  const p=cur();let hide=null;const cnt=[],prev=[];
-  $('blocks').innerHTML=p.blocks.map(b=>{
-    const ind=b.indent||0;let hidden=false;
+/* 把 [i,j) 的區塊畫成 HTML；遇到分歧點就把底下的分支排成欄 */
+function renderRange(bs,i,j,o){
+  let h='',hide=null,seeded=!o.seed||!o.seed.n;const cnt=[],prev=[];
+  for(let k=i;k<j;k++){
+    const b=bs[k],ind=b.indent||0;let hidden=o.hidden;
     if(hide!=null&&ind>hide)hidden=true;else hide=null;
-    if(!hidden&&(b.type==='toggle'||b.type==='scn')&&b.collapsed)hide=ind;
+    if(!hidden&&COLL.has(b.type)&&b.collapsed)hide=ind;
     cnt.length=ind+1;prev.length=ind+1;let n=0;
+    /* 分支裡的步驟接著共同步驟的編號往下數 */
+    if(!seeded&&ind===o.seed.lvl){seeded=true;if(prev[ind]===undefined){prev[ind]='step';cnt[ind]=o.seed.n}}
+    const before=prev[ind]==='step'?(cnt[ind]||0):0;
     if(b.type==='num'||b.type==='step'){n=prev[ind]===b.type?(cnt[ind]||0)+1:1;cnt[ind]=n}
     prev[ind]=b.type;
-    return blockHTML(b,{n,hidden});
-  }).join('');
+    const rel=ind-o.off;
+    h+=blockHTML(b,{n,hidden,rel});
+    if(b.type==='fork'){const e=subEnd(bs,k);h+=forkHTML(bs,k,e,{hidden:hidden||!!b.collapsed,rel,base:before});k=e-1;hide=null}
+  }
+  return h;
+}
+function forkGroups(bs,i,e){const g=[];for(let k=i+1;k<e;){const en=subEnd(bs,k);g.push([k,en]);k=en}return g}
+function forkHTML(bs,i,e,o){
+  const f=bs[i],v=f.view||'side',groups=forkGroups(bs,i,e),tab=clamp(f.tab||0,0,Math.max(0,groups.length-1));
+  let h='';
+  if(v==='tab'&&groups.length)h+=`<div class="fktabs${o.hidden?' hid':''}" style="--ind:${o.rel}">${groups.map(([s],x)=>{const g=bs[s];return `<button type="button" data-ftab="${f.id}" data-ti="${x}" class="${x===tab?'on':''}">${esc(plain(g.html).trim()||'未命名分支')}${g.act?'・'+ACTL[g.act]:''}</button>`}).join('')}</div>`;
+  h+=`<div class="fkwrap v-${v}${o.hidden?' hid':''}" style="--ind:${o.rel};--n:${Math.max(1,Math.min(6,groups.length))}">`;
+  groups.forEach(([s,en],x)=>{const g=bs[s],off=g.indent||0,off2=v==='tab'&&x!==tab;
+    h+=`<div class="brcol${g.act?' a-'+g.act:''}${off2?' off':''}">`+renderRange(bs,s,en,{off,hidden:o.hidden||off2,seed:{lvl:off+1,n:o.base}})+'</div>'});
+  return h+'</div>';
+}
+function renderBlocks(fid,pos){
+  const p=cur();
+  $('blocks').innerHTML=renderRange(p.blocks,0,p.blocks.length,{off:0,hidden:false});
   decorateTags($('blocks'));
   if(fid)focusBlock(fid,pos);
 }
@@ -616,8 +701,10 @@ function applyType(b,key){
   const p=cur(),i=p.blocks.indexOf(b);if(i<0)return;
   if(key.startsWith('callout:')){const[,c,e]=key.split(':');b.type='callout';b.bg=c;b.emoji=e}
   else if(key==='divider'){b.type='divider';b.html='';delete b.bg;delete b.color;const nb=mkB('p','',{indent:b.indent||0});p.blocks.splice(i+1,0,nb);touch();render(nb.id,'start');return}
-  else{b.type=key;if(key==='toggle'||key==='scn')b.collapsed=false;if(key==='callout'){if(b.bg===undefined)b.bg='gray';b.emoji=b.emoji||'💡'}
-    if(key==='scn'){const nx=p.blocks[i+1];if(!nx||(nx.indent||0)<=(b.indent||0))p.blocks.splice(i+1,0,mkB('step','',{indent:(b.indent||0)+1}))}}
+  else{b.type=key;if(COLL.has(key))b.collapsed=false;if(key==='callout'){if(b.bg===undefined)b.bg='gray';b.emoji=b.emoji||'💡'}
+    const nx=p.blocks[i+1],noKid=!nx||(nx.indent||0)<=(b.indent||0),ind=b.indent||0;
+    if((key==='scn'||key==='branch')&&noKid)p.blocks.splice(i+1,0,mkB('step','',{indent:ind+1}));
+    if(key==='fork'){b.view=b.view||db.forkView||'side';if(noKid)p.blocks.splice(i+1,0,...mkBranch(ind+1),...mkBranch(ind+1))}}
   touch();render(b.id,'end');
 }
 function shiftIndent(i,d,el){
@@ -631,11 +718,14 @@ function insertAfter(i,nb){cur().blocks.splice(i+1,0,nb)}
 
 function onEnter(b,i,el){
   const p=cur(),txt=el.textContent;
+  /* 分歧點按 Enter：多加一條分支 */
+  if(b.type==='fork'){b.collapsed=false;const at=subEnd(p.blocks,i),nb=mkBranch((b.indent||0)+1);p.blocks.splice(at,0,...nb);b.tab=forkGroups(p.blocks,i,subEnd(p.blocks,i)).length-1;touch();render(nb[0].id,'start');return}
   if(['bullet','num','todo','toggle','quote','step','nkey','nwarn','nmemo','win','lose'].includes(b.type)&&!txt.trim()){
+    if(parentOf(p.blocks,i)?.type==='branch'){b.type='p';touch();render(b.id,'start');return}
     if(b.indent>0){shiftIndent(i,-1,el);return}
     b.type='p';touch();render(b.id,'start');return;
   }
-  if(b.type==='scn'&&!b.collapsed&&atEnd(el)){const nx=p.blocks[i+1];if(nx&&nx.type==='step'&&(nx.indent||0)===(b.indent||0)+1&&!plain(nx.html).trim()){focusBlock(nx.id,'start');return}}
+  if((b.type==='scn'||b.type==='branch')&&!b.collapsed&&atEnd(el)){const nx=p.blocks[i+1];if(nx&&nx.type==='step'&&(nx.indent||0)===(b.indent||0)+1&&!plain(nx.html).trim()){focusBlock(nx.id,'start');return}}
   if(txt.trim()&&atStart(el)){
     const nb=mkB(LISTY.includes(b.type)?b.type:'p','',{indent:b.indent||0});
     p.blocks.splice(i,0,nb);touch();render(b.id,'start');return;
@@ -645,7 +735,7 @@ function onEnter(b,i,el){
   const box=document.createElement('div');box.appendChild(tail.extractContents());
   b.html=clean(el.innerHTML);
   let type=LISTY.includes(b.type)?b.type:'p',ind=b.indent||0,at=i;
-  if(b.type==='toggle'||b.type==='scn'){if(b.collapsed)at=subEnd(p.blocks,i)-1;else{ind=ind+1;if(b.type==='scn')type='step'}}
+  if(b.type==='toggle'||b.type==='scn'||b.type==='branch'){if(b.collapsed)at=subEnd(p.blocks,i)-1;else{ind=ind+1;if(b.type!=='toggle')type='step'}}
   /* 寫完一則重點／注意／備註按 Enter：回到下一個步驟 */
   if(NOTES.includes(b.type)&&ind>0){let k=i-1;while(k>=0&&(p.blocks[k].indent||0)>=ind)k--;
     if(k>=0&&p.blocks[k].type==='step'&&(p.blocks[k].indent||0)===ind-1){type='step';ind=ind-1;at=subEnd(p.blocks,k)-1}}
@@ -655,7 +745,7 @@ function onEnter(b,i,el){
 function onBackspace(b,i,el,e){
   const p=cur();
   if(b.type!=='p'){e.preventDefault();b.type='p';touch();render(b.id,'start');return}
-  if(b.indent>0){e.preventDefault();shiftIndent(i,-1,el);return}
+  if(b.indent>0&&parentOf(p.blocks,i)?.type!=='branch'){e.preventDefault();shiftIndent(i,-1,el);return}
   let j=i-1;while(j>=0&&blkEl(p.blocks[j].id)?.classList.contains('hid'))j--;
   if(j<0)return;e.preventDefault();
   const pv=p.blocks[j];
@@ -684,7 +774,33 @@ function delBlock(i){delSeg(i,subEnd(cur().blocks,i))}
 function setTypeOnly(b,key){
   if(b.type==='divider'||key==='divider')return;
   if(key.startsWith('callout:')){const[,c,e]=key.split(':');b.type='callout';b.bg=c;b.emoji=e;return}
-  b.type=key;if(key==='toggle'||key==='scn')b.collapsed=false;if(key==='callout'){if(b.bg===undefined)b.bg='gray';b.emoji=b.emoji||'💡'}
+  b.type=key;if(COLL.has(key))b.collapsed=false;if(key==='callout'){if(b.bg===undefined)b.bg='gray';b.emoji=b.emoji||'💡'}
+}
+const parentOf=(bs,i)=>{const ind=bs[i].indent||0;let k=i-1;while(k>=0&&(bs[k].indent||0)>=ind)k--;return k>=0?bs[k]:null};
+/* 把幾個開頭相同的情境合併：共同的步驟只留一次，後面分成分支 */
+function mergeScn(ids){
+  const p=cur(),bs=p.blocks,snap=JSON.stringify(bs);
+  let S=ids.map(id=>bs.findIndex(b=>b.id===id)).filter(i=>i>=0&&bs[i].type==='scn').sort((a,b)=>a-b).map(i=>({i,b:bs[i],e:subEnd(bs,i)}));
+  S=S.filter((s,k)=>!S.some((t,m)=>m!==k&&t.i<s.i&&s.i<t.e));
+  if(S.length<2){toast('請至少選兩個情境');return}
+  const B0=S[0].b.indent||0;
+  const G=S.map(s=>{const base=(s.b.indent||0)+1,g=[];for(let k=s.i+1;k<s.e;k++){const x=bs[k];if((x.indent||0)<=base||!g.length)g.push([x]);else g[g.length-1].push(x)}return{s,g}});
+  const sig=(s,g)=>g.map(x=>x.type+':'+((x.indent||0)-(s.b.indent||0))+':'+plain(x.html).replace(/\s+/g,'')).join('\n');
+  let c=0;while(G.every(o=>o.g[c])&&G.every(o=>sig(o.s,o.g[c])===sig(G[0].s,G[0].g[c])))c++;
+  const cp=(x,d)=>Object.assign(structuredClone(x),{id:uid(),indent:clamp((x.indent||0)+d,0,8)});
+  const head=cp(S[0].b,B0-(S[0].b.indent||0));delete head.act;head.collapsed=false;
+  const out=[head,...G[0].g.slice(0,c).flat().map(x=>cp(x,B0-(S[0].b.indent||0)))];
+  out.push(mkB('fork','',{indent:B0+1,collapsed:false,view:db.forkView||'side'}));
+  G.forEach(({s,g})=>{const rest=g.slice(c).flat(),d=B0+2-(s.b.indent||0);
+    const lbl=rest[0]&&rest[0].type==='step'?rest[0].html:s.b.html;
+    out.push(mkB('branch',lbl,Object.assign({indent:B0+2,collapsed:false},s.b.act?{act:s.b.act}:{})));
+    rest.forEach(x=>out.push(cp(x,d)));
+    if(!rest.length)out.push(mkB('step','',{indent:B0+3}));});
+  for(let k=S.length-1;k>=0;k--)bs.splice(S[k].i,S[k].e-S[k].i);
+  bs.splice(S[0].i,0,...out);
+  bsel.clear();bAnchor=bFocus=null;touch();render();
+  toast(c?`已合併 ${S.length} 個情境：共同步驟 ${c} 個，其餘分成 ${S.length} 條分支`:`已合併 ${S.length} 個情境（第一步就不同，所以全部放進分支）`,()=>{p.blocks=JSON.parse(snap);touch();render()});
+  requestAnimationFrame(()=>{const el=blkEl(head.id);if(el){el.scrollIntoView({block:'start'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1500)}});
 }
 
 /* ================= 編輯事件 ================= */
@@ -757,22 +873,28 @@ B$.addEventListener('paste',e=>{
 });
 let selDiv=null;
 B$.addEventListener('click',e=>{
+  const ft=e.target.closest('[data-ftab]');if(ft){const f=bById(ft.dataset.ftab);if(f){f.tab=+ft.dataset.ti;touch();render()}return}
   const blk=e.target.closest('.blk');if(!blk)return;const b=bById(blk.dataset.id);if(!b)return;
   if(e.target.closest('[data-act]')){const k=(ACTS.indexOf(b.act||'')+1)%ACTS.length;if(ACTS[k])b.act=ACTS[k];else delete b.act;touch();render();return}
+  const fv=e.target.closest('[data-fview]');if(fv){b.view=fv.dataset.fview;db.forkView=b.view;b.collapsed=false;touch();render();return}
   const qa=e.target.closest('[data-qa]');
-  if(qa){const bs=cur().blocks,i=bs.indexOf(b),at=subEnd(bs,i);if(b.type==='scn')b.collapsed=false;
-    const nb=mkB(qa.dataset.qa,'',{indent:(b.indent||0)+1});bs.splice(at,0,nb);touch();render(nb.id,'start');return}
+  if(qa){const bs=cur().blocks,i=bs.indexOf(b),at=subEnd(bs,i),t=qa.dataset.qa,ind=(b.indent||0)+1;if(COLL.has(b.type))b.collapsed=false;
+    const nb=t==='fork'?mkFork(ind):t==='branch'?mkBranch(ind):[mkB(t,'',{indent:ind})];bs.splice(at,0,...nb);
+    if(b.type==='fork'&&t==='branch')b.tab=forkGroups(bs,i,subEnd(bs,i)).length-1;
+    touch();render(t==='fork'?nb[1].id:nb[0].id,'start');return}
   const chip=e.target.closest('.tx .tg');if(chip){openTagPop(chip);return}
   if(e.target.closest('[data-chk]')){b.checked=!b.checked;touch();render();return}
   if(e.target.closest('[data-tog]')){b.collapsed=!b.collapsed;touch();render();return}
   if(e.target.closest('[data-emo]')){openEmoji(e.target.closest('[data-emo]'),em=>{b.emoji=em;touch();render()});return}
-  if(e.target.closest('[data-plus]')){const i=cur().blocks.indexOf(b);const j=b.type==='toggle'&&b.collapsed?subEnd(cur().blocks,i)-1:i;const ind=b.type==='toggle'&&!b.collapsed?(b.indent||0)+1:(b.indent||0);const nb=mkB('p','',{indent:ind});insertAfter(j,nb);touch();render(nb.id,'start');openSlash(nb.id);drawSlash();return}
+  if(e.target.closest('[data-plus]')){const i=cur().blocks.indexOf(b);const j=COLL.has(b.type)&&b.collapsed||b.type==='fork'?subEnd(cur().blocks,i)-1:i;const ind=COLL.has(b.type)&&!b.collapsed&&b.type!=='fork'?(b.indent||0)+1:(b.indent||0);const nb=mkB('p','',{indent:ind});insertAfter(j,nb);touch();render(nb.id,'start');openSlash(nb.id);drawSlash();return}
   if(b.type==='divider'&&!e.target.closest('.gut')){document.querySelectorAll('.t-divider.sel').forEach(x=>x.classList.remove('sel'));blk.classList.add('sel');selDiv=b.id;return}
   if(!e.target.closest('.tx,.gut,button')){const t=blk.querySelector('.tx');if(t&&document.activeElement!==t)focusBlock(b.id,'end')}
 });
 document.addEventListener('pointerdown',e=>{if(selDiv&&!e.target.closest('.t-divider')){document.querySelectorAll('.t-divider.sel').forEach(x=>x.classList.remove('sel'));selDiv=null}},true);
 $('tail').addEventListener('click',()=>{const p=cur(),last=p.blocks[p.blocks.length-1];if(last&&last.type==='p'&&!plain(last.html).trim()&&(last.indent||0)===0){focusBlock(last.id,'end');return}const nb=mkB('p');p.blocks.push(nb);touch();render(nb.id,'start')});
 
+/* 分支並排時，只看滑鼠所在那一欄裡的區塊 */
+function inColX(els,x){return els.filter(el=>{const c=el.closest('.brcol');if(!c)return true;const r=c.getBoundingClientRect();return x>=r.left&&x<=r.right})}
 /* 拖曳 ⋮⋮ 換位置；沒拖曳就是開選單 */
 B$.addEventListener('pointerdown',e=>{
   const hd=e.target.closest('[data-hd]');if(!hd)return;e.preventDefault();
@@ -782,18 +904,20 @@ B$.addEventListener('pointerdown',e=>{
   const sx=e.clientX,sy=e.clientY;let drag=false,line=null,target=null;
   const mv=ev=>{
     if(!drag){if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<5)return;drag=true;closeMenus();moving.forEach(m=>blkEl(m)?.classList.add('dragging'));line=document.createElement('div');line.id='dropLine';B$.appendChild(line)}
-    const els=[...B$.querySelectorAll('.blk:not(.hid)')].filter(x=>!moving.has(x.dataset.id));
-    target=null;let y=null;const base=B$.getBoundingClientRect();
-    for(const x of els){const r=x.getBoundingClientRect();if(ev.clientY<r.top+r.height/2){target=x.dataset.id;y=r.top-base.top-2;break}}
-    if(y==null){const l=els[els.length-1];y=l?l.getBoundingClientRect().bottom-base.top:0}
-    line.style.top=y+'px';
+    const els=inColX([...B$.querySelectorAll('.blk:not(.hid)')].filter(x=>!moving.has(x.dataset.id)),ev.clientX);
+    target=null;let y=null,lr=null;const base=B$.getBoundingClientRect();
+    for(const x of els){const r=x.getBoundingClientRect();if(ev.clientY<r.top+r.height/2){target=x.dataset.id;y=r.top-base.top-2;lr=r;break}}
+    if(y==null){const l=els[els.length-1];lr=l?l.getBoundingClientRect():null;y=lr?lr.bottom-base.top:0}
+    line.style.top=y+'px';line.style.left=(lr?lr.left-base.left:0)+'px';line.style.right='auto';line.style.width=(lr?lr.width:base.width)+'px';
     const sc=$('scroll').getBoundingClientRect();if(ev.clientY<sc.top+40)$('scroll').scrollTop-=12;else if(ev.clientY>sc.bottom-40)$('scroll').scrollTop+=12;
   };
   const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',up);
     if(!drag){openBM(id,hd);return}
     line?.remove();const bs=cur().blocks,seg=bs.splice(i0,j0-i0);
     let at=target?bs.findIndex(b=>b.id===target):bs.length;if(at<0)at=bs.length;
-    const pv=bs[at-1],maxI=pv?(pv.indent||0)+1:0,d=Math.min(0,maxI-(seg[0].indent||0));
+    const pv=bs[at-1],maxI=pv?(pv.indent||0)+1:0,tb=bs[at];
+    /* 放到某個區塊前面＝變成它的同層 */
+    const d=tb&&target?(tb.indent||0)-(seg[0].indent||0):Math.min(0,maxI-(seg[0].indent||0));
     if(d)seg.forEach(b=>b.indent=clamp((b.indent||0)+d,0,8));
     bs.splice(at,0,...seg);touch();render();
   };
@@ -844,7 +968,9 @@ let bmId=null;
 function openBM(id,anchor){
   closeMenus();const b=bById(id);if(!b)return;bmId=id;blkEl(id)?.classList.add('menu');
   const m=$('bmenu'),isDiv=b.type==='divider',multi=bsel.has(id)&&bsel.size>1;
-  m.innerHTML=(multi?`<div class="mh" style="color:var(--accent)">已選 ${bsel.size} 個區塊，下面的動作會一起套用</div>`:'')+(isDiv?'':`<div class="mh">轉換成　<span style="color:var(--faint)">快捷鍵 Ctrl+Shift</span></div><div class="bmt">${SLASH.filter(s=>s[0]!=='divider').map(s=>`<button type="button" data-bt="${s[0]}"><span class="si">${esc(s[1])}</span>${esc(s[2])}</button>`).join('')}</div>
+  const nScn=multi?cur().blocks.filter(x=>bsel.has(x.id)&&x.type==='scn').length:0;
+  m.innerHTML=(multi?`<div class="mh" style="color:var(--accent)">已選 ${bsel.size} 個區塊，下面的動作會一起套用</div>`:'')+
+    (nScn>=2?`<div class="bma" style="border:0;margin:0;padding:0 0 4px"><button type="button" data-ba="merge" style="color:#8fb3ef">⑂　把 ${nScn} 個情境合併成分支</button></div>`:'')+(isDiv?'':`<div class="mh">轉換成　<span style="color:var(--faint)">快捷鍵 Ctrl+Shift</span></div><div class="bmt">${SLASH.filter(s=>s[0]!=='divider').map(s=>`<button type="button" data-bt="${s[0]}"><span class="si">${esc(s[1])}</span>${esc(s[2])}</button>`).join('')}</div>
     <div class="mh">文字顏色</div><div class="sws">${COLORS.map(([c,l])=>`<button type="button" class="sw ${c?'tc-'+c:''}" data-tc="${c}" title="${l}" aria-pressed="${(b.color||'')===c}">A</button>`).join('')}</div>
     <div class="mh">背景顏色</div><div class="sws">${COLORS.map(([c,l])=>`<button type="button" class="sw ${c?'bg-'+c+' tc-'+c:''}" data-bgc="${c}" title="${l}" aria-pressed="${(b.bg!==undefined?b.bg:(b.type==='callout'?'gray':''))===c}">${c?'A':'∅'}</button>`).join('')}</div>`)+
     `<div class="bma"><button type="button" data-ba="up">↑　上移</button><button type="button" data-ba="down">↓　下移</button><button type="button" data-ba="dup">⧉　複製　<span class="hint">Ctrl+D</span></button><button type="button" data-ba="del" class="danger">🗑　刪除</button></div>`;
@@ -857,6 +983,7 @@ $('bmenu').addEventListener('click',e=>{
   const multi=bsel.has(bmId)&&bsel.size>1;
   closeMenus();
   if(multi){const r=bRange(),tg=cur().blocks.filter(x=>bsel.has(x.id));
+    if(d.ba==='merge'){mergeScn(tg.filter(x=>x.type==='scn').map(x=>x.id));return}
     if(d.bt){tg.forEach(x=>setTypeOnly(x,d.bt));touch();render();return}
     if(d.tc!==undefined){tg.forEach(x=>{d.tc?x.color=d.tc:delete x.color});touch();render();return}
     if(d.bgc!==undefined){tg.forEach(x=>{x.bg=d.bgc;if(!d.bgc&&x.type!=='callout')delete x.bg});touch();render();return}
@@ -963,7 +1090,13 @@ $('newMenu').addEventListener('click',e=>{
   $('scroll').scrollTop=0;document.body.classList.remove('sideopen');
   if(t.dataset.np==='blank')setTimeout(()=>$('ptitle').focus(),20);
 });
-$('menuBtn').onclick=()=>document.body.classList.toggle('sideopen');
+/* 側欄：電腦上可以整個往左收起來（記住狀態），手機上維持滑出 */
+const UIK='nq-notes-ui',desk=()=>matchMedia('(min-width:861px)').matches;
+function setSideCol(v){document.body.classList.toggle('sidecol',v);try{localStorage.setItem(UIK,JSON.stringify({sidecol:v}))}catch(e){}}
+try{if(JSON.parse(localStorage.getItem(UIK)||'{}').sidecol)document.body.classList.add('sidecol')}catch(e){}
+$('sideClose').onclick=()=>desk()?setSideCol(true):document.body.classList.remove('sideopen');
+$('menuBtn').onclick=()=>desk()?setSideCol(false):document.body.classList.toggle('sideopen');
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='\\'){e.preventDefault();desk()?setSideCol(!document.body.classList.contains('sidecol')):document.body.classList.toggle('sideopen')}});
 $('scroll').addEventListener('pointerdown',()=>document.body.classList.remove('sideopen'));
 
 /* ================= 全域快捷鍵 ================= */
@@ -1119,13 +1252,13 @@ $('scroll').addEventListener('pointerdown',e=>{
   if(e.target.closest('.tx,button,input,label,a,.gut,#ptitle,.phead,.pop'))return;
   e.preventDefault();const sc=$('scroll');BD={mode:'rubber',x0:e.clientX,y0:e.clientY+sc.scrollTop,moved:false};
 });
-function blkAtY(y){const els=[...$('blocks').querySelectorAll('.blk:not(.hid)')];if(!els.length)return null;
+function blkAtY(y,x){const els=inColX([...$('blocks').querySelectorAll('.blk:not(.hid)')],x);if(!els.length)return null;
   for(const x of els){const r=x.getBoundingClientRect();if(y<r.bottom)return x}return els[els.length-1]}
 addEventListener('pointermove',e=>{
   if(!BD)return;if(!(e.buttons&1)){endDrag();return}
   const sc=$('scroll'),sr=sc.getBoundingClientRect();
   if(BD.mode==='text'){
-    const blk=blkAtY(e.clientY);if(!blk)return;const id=blk.dataset.id;
+    const blk=blkAtY(e.clientY,e.clientX);if(!blk)return;const id=blk.dataset.id;
     if(!BD.multi&&id===BD.start)return;
     if(!BD.multi){BD.multi=true;document.body.classList.add('bselecting');F.hidden=true;closeSlash();document.activeElement?.blur?.()}
     sel().removeAllRanges();if(bFocus!==id||bAnchor!==BD.start)setBSel(BD.start,id);
@@ -1133,8 +1266,8 @@ addEventListener('pointermove',e=>{
     const yc=e.clientY+sc.scrollTop;
     if(!BD.moved){if(Math.hypot(e.clientX-BD.x0,yc-BD.y0)<6)return;BD.moved=true;closeMenus();F.hidden=true;document.activeElement?.blur?.();sel().removeAllRanges();document.body.classList.add('bselecting');
       BD.box=document.createElement('div');BD.box.id='rubber';document.body.appendChild(BD.box)}
-    const top=Math.min(BD.y0,yc),bot=Math.max(BD.y0,yc),ids=[];
-    $('blocks').querySelectorAll('.blk:not(.hid)').forEach(x=>{const r=x.getBoundingClientRect(),t=r.top+sc.scrollTop,b=r.bottom+sc.scrollTop;if(b>top+2&&t<bot-2)ids.push(x.dataset.id)});
+    const top=Math.min(BD.y0,yc),bot=Math.max(BD.y0,yc),lx=Math.min(BD.x0,e.clientX),rx=Math.max(BD.x0,e.clientX),ids=[];
+    $('blocks').querySelectorAll('.blk:not(.hid)').forEach(x=>{const r=x.getBoundingClientRect(),t=r.top+sc.scrollTop,b=r.bottom+sc.scrollTop,c=x.closest('.brcol'),cr=c&&c.getBoundingClientRect();if(b>top+2&&t<bot-2&&(!cr||(cr.right>lx&&cr.left<rx)))ids.push(x.dataset.id)});
     if(ids.length){bsel=new Set(ids);bAnchor=ids[0];bFocus=ids[ids.length-1]}else{bsel.clear();bAnchor=bFocus=null}paintSel();
     Object.assign(BD.box.style,{left:Math.min(BD.x0,e.clientX)+'px',top:Math.max(sr.top,top-sc.scrollTop)+'px',width:Math.abs(e.clientX-BD.x0)+'px',height:Math.max(0,Math.min(sr.bottom,bot-sc.scrollTop)-Math.max(sr.top,top-sc.scrollTop))+'px'});
     if(e.clientY<sr.top+30)sc.scrollTop-=14;else if(e.clientY>sr.bottom-30)sc.scrollTop+=14;
@@ -1149,10 +1282,10 @@ let clip=null;
 function blocksText(seg){const base=Math.min(...seg.map(b=>b.indent||0)),cnt=[],prev=[];
   return seg.map(b=>{const ind=(b.indent||0)-base;cnt.length=ind+1;prev.length=ind+1;let pre='';
     if(b.type==='num'||b.type==='step'){cnt[ind]=prev[ind]===b.type?(cnt[ind]||0)+1:1;pre=cnt[ind]+'. '}
-    else pre={bullet:'• ',todo:b.checked?'[x] ':'[ ] ',quote:'> ',nkey:'重點：',nwarn:'注意：',nmemo:'備註：',win:'成功：',lose:'失敗：',h1:'# ',h2:'## ',h3:'### ',scn:'【情境】'}[b.type]||'';
+    else pre={bullet:'• ',todo:b.checked?'[x] ':'[ ] ',quote:'> ',nkey:'重點：',nwarn:'注意：',nmemo:'備註：',win:'成功：',lose:'失敗：',h1:'# ',h2:'## ',h3:'### ',scn:'【情境】',fork:'【分歧】',branch:'【分支】'}[b.type]||'';
     prev[ind]=b.type;if(b.type==='divider')return '  '.repeat(ind)+'---';
     const t=document.createElement('template');t.innerHTML=(b.html||'').replace(/<br\s*\/?>/gi,'\n');
-    return '  '.repeat(ind)+pre+(t.content.textContent||'')+(b.type==='scn'&&b.act?`（${ACTL[b.act]}）`:'');}).join('\n')}
+    return '  '.repeat(ind)+pre+(t.content.textContent||'')+((b.type==='scn'||b.type==='branch')&&b.act?`（${ACTL[b.act]}）`:'');}).join('\n')}
 function readClip(dt){let L=null;try{const j=dt.getData('application/x-nq-blocks');if(j)L=JSON.parse(j)}catch(_){}
   const t=(dt.getData('text/plain')||'').replace(/\r/g,'');if(!L&&clip&&t&&t===clip.text)L=clip.blocks;return Array.isArray(L)&&L.length?L:null}
 function pasteAt(L,at,base,removeIdx){
@@ -1248,6 +1381,8 @@ function scnList(){
 function ovPre(x,n){
   if(x.type==='step')return `<span class="sno">${n}</span>`;
   if(CHIP[x.type])return `<span class="chip ${x.type}">${CHIP[x.type]}</span>`;
+  if(x.type==='fork')return '<span class="fklbl">⑂ 分歧</span>';
+  if(x.type==='branch')return `<span class="chip" style="background:#22304a;color:#8fb3ef">分支${x.act?'・'+ACTL[x.act]:''}</span>`;
   return {bullet:'<span style="color:var(--muted)">•</span>',num:`<span style="color:var(--muted)">${n}.</span>`,todo:x.checked?'☑':'☐',quote:'<span style="color:var(--muted)">❝</span>',callout:esc(x.emoji||'💡'),toggle:'<span style="color:var(--muted)">▸</span>'}[x.type]||'';
 }
 function ovLines(sc,list){const cnt=[],prev=[];
@@ -1271,6 +1406,7 @@ function drawOv(){
     ${groups.map(g=>`<span class="lb">${esc(g)}</span>${db.tags.filter(t=>t.g===g&&used.has(t.t)).map(t=>`<span class="tg tg-${t.c}${OV.tags.has(t.t)?' on':''}" data-ft="${esc(t.t)}">${esc(t.t)}</span>`).join('')}`).join('')}
     ${OV.tags.size?'<button class="btn" data-clr>清除標籤篩選</button>':''}
     <span style="margin-left:auto"></span>
+    ${OV.pick.size>=2?'<button class="btn" data-merge title="同一頁的情境才能合併">⑂ 合併成分支</button>':''}
     ${OV.mode==='cmp'?'<button class="btn primary" data-mode="cards">← 回到卡片</button>':`<button class="btn${OV.pick.size>=2?' primary':''}" data-mode="cmp" ${OV.pick.size<2?'disabled style="opacity:.5;cursor:default"':''}>並排比較（已勾 ${OV.pick.size}）</button>`}`;
   const L=ovFiltered();
   $('ovCount').textContent=`共 ${OV.list.length} 個情境${L.length!==OV.list.length?`，符合 ${L.length} 個`:''}`;
@@ -1312,6 +1448,9 @@ $('ovw').addEventListener('click',e=>{
   if(t.dataset.ov){OV[t.dataset.ov]=t.dataset.v;drawOv();return}
   if(t.dataset.ft!==undefined){OV.tags.has(t.dataset.ft)?OV.tags.delete(t.dataset.ft):OV.tags.add(t.dataset.ft);drawOv();return}
   if(t.dataset.clr!==undefined){OV.tags.clear();drawOv();return}
+  if(t.dataset.merge!==undefined){const S=OV.list.filter(s=>OV.pick.has(s.key)),pg=new Set(S.map(s=>s.p.id));
+    if(pg.size>1){toast('只能合併同一頁裡的情境');return}
+    $('ovw').hidden=true;db.currentId=S[0].p.id;OV.pick.clear();OV.mode='cards';mergeScn(S.map(s=>s.b.id));return}
   if(t.dataset.mode&&!t.disabled){OV.mode=t.dataset.mode;drawOv();return}
 });
 $('ovw').addEventListener('change',e=>{if(e.target.dataset.pk){const k=e.target.dataset.pk;e.target.checked?OV.pick.add(k):OV.pick.delete(k);const y=$('ovBody').scrollTop;drawOv();$('ovBody').scrollTop=y}});
