@@ -250,9 +250,20 @@ body.bselecting,body.bselecting *{user-select:none!important;-webkit-user-select
 .ovt td .ovl{margin-left:0}
 
 /* 分歧點 / 分支 */
-.t-fork{margin-top:.4em}
-.t-fork .bc{align-items:center;padding:3px 6px}
-.t-fork .tx{font-size:16px;color:var(--ink)}
+.fkgrp{position:relative;margin:6px 0 4px calc(var(--ind,0)*26px)}
+.fkgrp.hid{display:none}
+.fkgrp>.fkwrap,.fkgrp>.fktabs{margin-left:0}
+.fkgrp>.fkwrap.v-tree{margin-left:12px}
+/* 分支的工具列：滑到框上才出現在右上角 */
+.fkgrp>.t-fork{position:absolute;right:0;top:-30px;z-index:7;margin:0!important;opacity:0;transition:opacity .12s;display:block;padding:0}
+.fkgrp:hover>.t-fork,.fkgrp>.t-fork.menu,.fkgrp>.t-fork.bsel{opacity:1}
+.fkgrp.coll>.t-fork{position:static;opacity:1;display:inline-block}
+.fkbar{display:flex;gap:4px;align-items:center;background:var(--panel);border:1px solid var(--line2);border-radius:7px;padding:2px 4px;box-shadow:0 4px 14px rgb(0 0 0 / .4)}
+.fkb{border:0;background:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.fkb:hover{background:var(--hover);color:var(--ink)}
+.fkbar [data-hd]{cursor:grab;letter-spacing:-2px}
+.fkgrp>.t-fork.bsel .fkbar{border-color:var(--accent)}
+@media (hover:none){.fkgrp>.t-fork{opacity:1}}
 .fklbl{flex:none;font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:#22304a;color:#8fb3ef;white-space:nowrap}
 .fkv{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;flex:none}
 .fkv button{border:0;background:none;padding:1px 8px;font-size:12px;cursor:pointer;color:var(--muted)}
@@ -282,9 +293,6 @@ body.bselecting,body.bselecting *{user-select:none!important;-webkit-user-select
 @media (min-width:861px){body.sidecol #side{width:0;border-right-color:transparent}body.sidecol #menuBtn{display:inline-flex}}
 @media (max-width:1100px){.fkwrap.v-side{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
 /* 分支裡面再分岔：標頭換行，不要擠成直排 */
-.brcol .t-fork .bc{flex-wrap:wrap;row-gap:4px}
-.brcol .t-fork .tx{flex:1 1 140px}
-.brcol .t-fork .qadd{position:static;background:none;border:0;padding:0;pointer-events:auto}
 .brcol .t-branch .bc{flex-wrap:wrap}
 .brcol .t-branch .tx{flex:1 1 120px}
 
@@ -539,7 +547,7 @@ function tpl(kind){
     B('callout','輸入 <code>/情境</code> 建立一個情境走勢。在情境標題按 Enter 會產生<b>自動編號</b>的步驟；滑到步驟上可以加 <b>重點</b>、<b>注意</b>、<b>備註</b>；滑到情境標題上可以加 <b>成功</b>、<b>失敗</b>。打字打到「歐盤、底部、5/60」這類詞會自動變成彩色標籤。右上角「🧭 情境總覽」可以把所有情境排在一起比較。<br><b>分支</b>：開頭一樣、後面走法不同時，滑到情境標題上按 <b>＋分歧</b>，共同的步驟只寫一次，後面分成多條分支（並排／分頁／樹狀可切換）。已經寫好的相似情境，可以框選起來按 ⋮⋮ →「合併成分支」。',{bg:'purple',emoji:'🧭'}),
     B('scn','趨勢空',{collapsed:false}),
     B('step',`${T('歐盤')}時 ${T('5/60')} 從${T('下彎')}變${T('走平')}`,{indent:1}),
-    B('fork','價格收在哪裡？',{indent:1,collapsed:false,view:'side'}),
+    B('fork','',{indent:1,collapsed:false,view:'side'}),
     B('branch','收在歐盤底部',{indent:2,act:'long',collapsed:false}),
     B('step',`價格收在${T('歐盤')}${T('底部')}`,{indent:3}),
     B('step',`價格都在${T('下彎')}的 ${T('1/60')} 下`,{indent:3}),
@@ -578,6 +586,7 @@ function norm(d){
       if(n.act&&!ACTL[n.act])delete n.act;
       if(n.view&&!VIEWS.some(v=>v[0]===n.view))delete n.view;
       return n});
+    for(let k=0;k<q.blocks.length;k++){const f=q.blocks[k];if(f.type==='fork'&&plain(f.html).trim()){q.blocks.splice(k,0,mkB('step',f.html,{indent:f.indent||0}));f.html='';k++}}
     if(!q.blocks.length)q.blocks=[mkB('p')];
     return q});
   if(!d.pages.length)d.pages=[mkPage({blocks:[mkB('p')]})];
@@ -626,6 +635,8 @@ function stripChars(el,n){const w=document.createTreeWalker(el,NodeFilter.SHOW_T
 /* ================= 渲染 ================= */
 function blockHTML(b,ctx){
   const ind=ctx.rel??(b.indent||0),gut=`<div class="gut"><button data-plus title="在下方新增區塊">+</button><button data-hd title="點擊：選單　拖曳：移動">⋮⋮</button></div>`;
+  if(b.type==='fork'){const v=b.view||'side';
+    return `<div class="blk t-fork${ctx.hidden?' hid':''}${bsel.has(b.id)?' bsel':''}" data-id="${b.id}"><div class="fkbar"><button type="button" class="fkb" data-hd title="點擊：選單（刪除、複製…）　拖曳：移動整組分支">⋮⋮</button><button type="button" class="fkb" data-tog title="收合／展開這組分支">${b.collapsed?`▶ 已收合 ${ctx.nb||0} 條分支`:'▼ 收合'}</button><span class="fkv">${VIEWS.map(([k,l])=>`<button type="button" data-fview="${k}" class="${v===k?'on':''}">${l}</button>`).join('')}</span><button type="button" class="fkb" data-qa="branch">＋分支</button></div></div>`}
   if(b.type==='divider')return `<div class="blk t-divider${ctx.hidden?' hid':''}${bsel.has(b.id)?' bsel':''}" data-id="${b.id}" style="--ind:${ind}">${gut}<div class="bc"><hr></div></div>`;
   let pre='';
   if(b.type==='bullet')pre=`<span class="pre dot2">${['•','◦','▪'][ind%3]}</span>`;
@@ -636,8 +647,6 @@ function blockHTML(b,ctx){
   let post='';
   if(b.type==='scn'){pre=`<button class="pre tgl${b.collapsed?'':' open'}" data-tog aria-label="展開或收合">▶</button><span class="scnlbl">情境</span>`;
     post=`<span class="qadd"><button data-qa="step">＋步驟</button><button data-qa="fork" title="從這裡分成多條分支">＋分歧</button><button data-qa="win">＋成功</button><button data-qa="lose">＋失敗</button></span><button class="act ${b.act||'none'}" data-act title="點一下切換：做多 → 做空 → 觀望 → 不標">${ACTL[b.act]||'＋作法'}</button>`;}
-  if(b.type==='fork'){pre=`<button class="pre tgl${b.collapsed?'':' open'}" data-tog aria-label="展開或收合">▶</button><span class="fklbl">⑂ 分歧點</span>`;const v=b.view||'side';
-    post=`<span class="fkv">${VIEWS.map(([k,l])=>`<button type="button" data-fview="${k}" class="${v===k?'on':''}">${l}</button>`).join('')}</span><span class="qadd" style="opacity:1"><button data-qa="branch">＋分支</button></span>`;}
   if(b.type==='branch'){pre=`<button class="pre tgl${b.collapsed?'':' open'}" data-tog aria-label="展開或收合">▶</button>`;
     post=`<span class="qadd"><button data-qa="step">＋步驟</button><button data-qa="win">＋成功</button><button data-qa="lose">＋失敗</button><button data-qa="fork" title="在這條分支裡再分岔">＋分歧</button></span><button class="act ${b.act||'none'}" data-act title="點一下切換：做多 → 做空 → 觀望 → 不標">${ACTL[b.act]||'＋作法'}</button>`;}
   if(b.type==='step'){pre=`<span class="pre sno">${ctx.n}</span>`;post=`<span class="qadd"><button data-qa="nkey">＋重點</button><button data-qa="nwarn">＋注意</button><button data-qa="nmemo">＋備註</button></span>`;}
@@ -673,8 +682,10 @@ function renderRange(bs,i,j,o){
     if(b.type==='num'||b.type==='step'){n=prev[ind]===b.type?(cnt[ind]||0)+1:1;cnt[ind]=n}
     prev[ind]=b.type;
     const rel=ind-o.off;
+    if(b.type==='fork'){const e=subEnd(bs,k);
+      h+=`<div class="fkgrp${hidden?' hid':''}${b.collapsed?' coll':''}" style="--ind:${rel}">`+blockHTML(b,{hidden,rel,nb:forkGroups(bs,k,e).length})+forkHTML(bs,k,e,{hidden:hidden||!!b.collapsed,rel,base:before})+'</div>';
+      k=e-1;hide=null;continue}
     h+=blockHTML(b,{n,hidden,rel});
-    if(b.type==='fork'){const e=subEnd(bs,k);h+=forkHTML(bs,k,e,{hidden:hidden||!!b.collapsed,rel,base:before});k=e-1;hide=null}
   }
   return h;
 }
@@ -700,11 +711,16 @@ function render(fid,pos){renderSide();renderHead();renderBlocks(fid,pos)}
 function applyType(b,key){
   const p=cur(),i=p.blocks.indexOf(b);if(i<0)return;
   if(key.startsWith('callout:')){const[,c,e]=key.split(':');b.type='callout';b.bg=c;b.emoji=e}
+  else if(key==='fork'){const ind=b.indent||0;
+    if(plain(b.html).trim()){if(b.type==='p'||b.type==='fork')b.type='step';const nb=mkFork(ind);p.blocks.splice(subEnd(p.blocks,i),0,...nb);touch();render(nb[1].id,'start');return}
+    b.type='fork';b.html='';b.collapsed=false;b.view=b.view||db.forkView||'side';const nx=p.blocks[i+1];
+    if(nx&&(nx.indent||0)>ind){touch();render();return}
+    const nb=[...mkBranch(ind+1),...mkBranch(ind+1)];p.blocks.splice(i+1,0,...nb);touch();render(nb[0].id,'start');return}
   else if(key==='divider'){b.type='divider';b.html='';delete b.bg;delete b.color;const nb=mkB('p','',{indent:b.indent||0});p.blocks.splice(i+1,0,nb);touch();render(nb.id,'start');return}
   else{b.type=key;if(COLL.has(key))b.collapsed=false;if(key==='callout'){if(b.bg===undefined)b.bg='gray';b.emoji=b.emoji||'💡'}
     const nx=p.blocks[i+1],noKid=!nx||(nx.indent||0)<=(b.indent||0),ind=b.indent||0;
     if((key==='scn'||key==='branch')&&noKid)p.blocks.splice(i+1,0,mkB('step','',{indent:ind+1}));
-    if(key==='fork'){b.view=b.view||db.forkView||'side';if(noKid)p.blocks.splice(i+1,0,...mkBranch(ind+1),...mkBranch(ind+1))}}
+}
   touch();render(b.id,'end');
 }
 function shiftIndent(i,d,el){
@@ -772,7 +788,7 @@ function delSeg(i,j){
 }
 function delBlock(i){delSeg(i,subEnd(cur().blocks,i))}
 function setTypeOnly(b,key){
-  if(b.type==='divider'||key==='divider')return;
+  if(b.type==='divider'||key==='divider'||b.type==='fork'||key==='fork')return;
   if(key.startsWith('callout:')){const[,c,e]=key.split(':');b.type='callout';b.bg=c;b.emoji=e;return}
   b.type=key;if(COLL.has(key))b.collapsed=false;if(key==='callout'){if(b.bg===undefined)b.bg='gray';b.emoji=b.emoji||'💡'}
 }
@@ -852,8 +868,8 @@ B$.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&mod&&b.type==='todo'){e.preventDefault();b.checked=!b.checked;touch();render(b.id,caretOff(el));return}
   if(e.key==='Backspace'&&atStart(el)){onBackspace(b,i,el,e);return}
   if(e.key==='Tab'){e.preventDefault();shiftIndent(i,e.shiftKey?-1:1,el);return}
-  if(e.key==='ArrowUp'&&atStart(el)){let j=i-1;while(j>=0&&(p.blocks[j].type==='divider'||blkEl(p.blocks[j].id)?.classList.contains('hid')))j--;if(j>=0){e.preventDefault();focusBlock(p.blocks[j].id,'end')}else{e.preventDefault();$('ptitle').focus()}return}
-  if(e.key==='ArrowDown'&&atEnd(el)){let j=i+1;while(j<p.blocks.length&&(p.blocks[j].type==='divider'||blkEl(p.blocks[j].id)?.classList.contains('hid')))j++;if(j<p.blocks.length){e.preventDefault();focusBlock(p.blocks[j].id,'start')}return}
+  if(e.key==='ArrowUp'&&atStart(el)){let j=i-1;while(j>=0&&(p.blocks[j].type==='divider'||p.blocks[j].type==='fork'||blkEl(p.blocks[j].id)?.classList.contains('hid')))j--;if(j>=0){e.preventDefault();focusBlock(p.blocks[j].id,'end')}else{e.preventDefault();$('ptitle').focus()}return}
+  if(e.key==='ArrowDown'&&atEnd(el)){let j=i+1;while(j<p.blocks.length&&(p.blocks[j].type==='divider'||p.blocks[j].type==='fork'||blkEl(p.blocks[j].id)?.classList.contains('hid')))j++;if(j<p.blocks.length){e.preventDefault();focusBlock(p.blocks[j].id,'start')}return}
   if(mod&&e.key.toLowerCase()==='d'){e.preventDefault();dupBlock(i);return}
   if(mod&&e.shiftKey&&e.key==='ArrowUp'){e.preventDefault();moveBlock(i,-1);focusBlock(b.id);return}
   if(mod&&e.shiftKey&&e.key==='ArrowDown'){e.preventDefault();moveBlock(i,1);focusBlock(b.id);return}
@@ -967,7 +983,7 @@ $('slash').addEventListener('mousedown',e=>{e.preventDefault();const b=e.target.
 let bmId=null;
 function openBM(id,anchor){
   closeMenus();const b=bById(id);if(!b)return;bmId=id;blkEl(id)?.classList.add('menu');
-  const m=$('bmenu'),isDiv=b.type==='divider',multi=bsel.has(id)&&bsel.size>1;
+  const m=$('bmenu'),isDiv=b.type==='divider'||b.type==='fork',multi=bsel.has(id)&&bsel.size>1;
   const nScn=multi?cur().blocks.filter(x=>bsel.has(x.id)&&x.type==='scn').length:0;
   m.innerHTML=(multi?`<div class="mh" style="color:var(--accent)">已選 ${bsel.size} 個區塊，下面的動作會一起套用</div>`:'')+
     (nScn>=2?`<div class="bma" style="border:0;margin:0;padding:0 0 4px"><button type="button" data-ba="merge" style="color:#8fb3ef">⑂　把 ${nScn} 個情境合併成分支</button></div>`:'')+(isDiv?'':`<div class="mh">轉換成　<span style="color:var(--faint)">快捷鍵 Ctrl+Shift</span></div><div class="bmt">${SLASH.filter(s=>s[0]!=='divider').map(s=>`<button type="button" data-bt="${s[0]}"><span class="si">${esc(s[1])}</span>${esc(s[2])}</button>`).join('')}</div>
@@ -1055,7 +1071,7 @@ F.addEventListener('click',e=>{
 $('ptitle').addEventListener('input',()=>{const p=cur();p.title=$('ptitle').textContent.replace(/\n/g,' ');touch();renderSideSoon();$('crumb').textContent=`${p.icon||'📄'}  ${p.title||'未命名'}`});
 $('ptitle').addEventListener('keydown',e=>{
   if(e.isComposing||e.keyCode===229)return;
-  if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();const p=cur();let f=p.blocks.find(b=>b.type!=='divider');if(!f){f=mkB('p');p.blocks.unshift(f);touch();renderBlocks()}focusBlock(f.id,'start')}
+  if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();const p=cur();let f=p.blocks.find(b=>b.type!=='divider'&&b.type!=='fork');if(!f){f=mkB('p');p.blocks.unshift(f);touch();renderBlocks()}focusBlock(f.id,'start')}
 });
 $('ptitle').addEventListener('paste',e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData.getData('text/plain')||'').replace(/\s*\n\s*/g,' '))});
 const pickIcon=a=>openEmoji(a,em=>{cur().icon=em;touch();render()},true);
@@ -1390,7 +1406,7 @@ function ovLines(sc,list){const cnt=[],prev=[];
     const d=Math.max(0,(x.indent||0)-sc.base);cnt.length=d+1;prev.length=d+1;let n=0;
     if(x.type==='step'||x.type==='num'){n=prev[d]===x.type?(cnt[d]||0)+1:1;cnt[d]=n}prev[d]=x.type;
     const st=/^h[123]$/.test(x.type)?' style="font-weight:700"':'';
-    return `<div class="ovl o-${x.type}" style="--d:${d}">${ovPre(x,n)}<div class="ovx"${st}>${x.html||'<span style="color:var(--faint)">（空白）</span>'}</div></div>`}).join('')}
+    return `<div class="ovl o-${x.type}" style="--d:${d}">${ovPre(x,n)}<div class="ovx"${st}>${x.type==='fork'?'':(x.html||'<span style="color:var(--faint)">（空白）</span>')}</div></div>`}).join('')}
 const actChip=b=>b.act?`<span class="act ${b.act}" style="cursor:default">${ACTL[b.act]}</span>`:'';
 function ovFiltered(){
   const q=OV.q.trim().toLowerCase();
